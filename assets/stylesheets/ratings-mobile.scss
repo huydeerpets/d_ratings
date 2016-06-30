@@ -1,0 +1,138 @@
+.lenses-rating{
+font-size:0.98em;
+}
+.username.new-user a {
+margin-right:5px;
+}
+.total-review-rating span{
+display:inline;
+font-size: 12px;
+vertical-align: baseline;
+}
+.names span{
+display:inline;
+padding-right:0;
+}
+#topic-title .title-wrapper
+{
+margin-bottom:10px;
+}
+.camera-lens-rating, .lens-rating { 
+			height: 19px;  /* Can be anything */
+			line-height: 19px;
+			position: relative;
+			background: #eee;
+			width: 200px;
+			
+		}
+.camera-lens-rating > span,.lens-rating > span {
+			display: block;
+			height: 100%;
+			
+			
+			
+		}
+.camera-lens-rating > span:after ,.lens-rating > span:after {
+			content: "";
+			position: absolute;
+			top: 0; left: 0; bottom: 0; right: 0;
+			z-index: 1;
+			overflow: hidden;
+		}
+.camera-lens-rating .rating-10,.lens-rating .rating-10{
+background-color: #FFFF00; 
+}
+.camera-lens-rating .rating-20,.lens-rating .rating-20{
+background-color: #E8E113; 
+}
+.camera-lens-rating .rating-30,.lens-rating .rating-30{
+background-color: #E8E813; 
+}
+.camera-lens-rating .rating-40,.lens-rating .rating-40{
+background-color: #DDE813; 
+}
+
+.camera-lens-rating .rating-50,.lens-rating .rating-50{
+background-color: #c4e813; 
+}
+
+.camera-lens-rating .rating-60,.lens-rating .rating-60{
+background-color: #afe813; 
+}
+
+.camera-lens-rating .rating-70,.lens-rating .rating-70{
+background-color: #80FF00;
+}
+
+.camera-lens-rating .rating-80,.lens-rating .rating-80{
+background-color: #56e813;
+}
+
+.camera-lens-rating .rating-90,.lens-rating .rating-90{
+background-color: #38FF26;
+}
+
+.camera-lens-rating .rating-100,.lens-rating .rating-100{
+background-color: #0aff00;
+}
+
+
+span.sharprating {
+  background-size: contain;
+    display: inline-block;
+    font-size: 0;
+    height: 19px;
+    line-height: 19px;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    vertical-align: baseline;
+    white-space: nowrap;
+    
+  
+}
+
+.total-review-rating{
+font-size:0.6em;
+}
+
+
+.composer-rating {
+  padding: 3px 7px;
+  .rating {
+    margin-left: 2px;
+  }
+}
+
+.exact-rating {
+  color: #000;
+  display: inline-block;
+  font-size: 12px;
+  height: 19px;
+  padding-left:3px;
+}
+
+.topic-list .exact-rating {
+  font-size: 12px;
+  height: 19px;
+}
+
+.topic-post .rating {
+  vertical-align: top;
+  /*line-height:1.25;*/
+}
+
+span.rating {
+  background-size: contain;
+    display: inline-block;
+    
+    font-size:12px;
+    line-height: 19px;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    vertical-align: baseline;
+    white-space: nowrap;
+    
+  
+}
