@@ -6,8 +6,8 @@ import ComposerView from 'discourse/views/composer';
 import Composer from 'discourse/models/composer';
 import Post from 'discourse/models/post';
 import { registerUnbound } from 'discourse/lib/helpers';
-import renderUnboundRating from 'discourse/plugins/d_ratings/lib/render-rating';
-import renderUnboundRating2 from 'discourse/plugins/d_ratings/lib/render-rating2';
+import renderUnboundRating from 'discourse/plugins/d-progress/lib/render-rating';
+import renderUnboundRating2 from 'discourse/plugins/d-progress/lib/render-rating2';
 import { popupAjaxError } from 'discourse/lib/ajax-error';
 import { withPluginApi } from 'discourse/lib/plugin-api';
 

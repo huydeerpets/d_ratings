@@ -1,4 +1,4 @@
-# name: d_ratings
+# name: d-progress
 # about: A Discourse plugin that lets you use topics to rate things
 # version: 0.2
 # authors: Angus McLeod
@@ -11,7 +11,7 @@ after_initialize do
 
   module ::DiscourseRatings
     class Engine < ::Rails::Engine
-      engine_name "d_rating"
+      engine_name "d_progress"
       isolate_namespace DiscourseRatings
     end
   end
