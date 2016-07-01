@@ -1,25 +1,26 @@
-# name: d-progress
+# name: discourse-ratings
 # about: A Discourse plugin that lets you use topics to rate things
 # version: 0.2
 # authors: Angus McLeod
 
 register_asset 'stylesheets/ratings-desktop.scss', :desktop
-register_asset 'stylesheets/ratings-desktop.scss', :mobile
+register_asset 'stylesheets/ratings-mobile.scss', :mobile
 after_initialize do
 
   Category.register_custom_field_type('rating_enabled', :boolean)
 
   module ::DiscourseRatings
     class Engine < ::Rails::Engine
-      engine_name "d_progress"
+      engine_name "discourse_ratings"
       isolate_namespace DiscourseRatings
     end
   end
 
-  require_dependency "application_controller"
+ require_dependency "application_controller"
   class DiscourseRatings::RatingController < ::ApplicationController
     def rate
       post = Post.find(params[:id].to_i)
+	  post.custom_fields["rating"] = params[:rating].to_f #old
       post.custom_fields["rating1"] = params[:rating1].to_f #sharpness
 	  post.custom_fields["rating2"] = params[:rating2].to_f #aberrations
 	  post.custom_fields["rating3"] = params[:rating3].to_f #bokeh
@@ -40,6 +41,7 @@ after_initialize do
     def remove
       id = params[:id].to_i
       post = Post.find(id)
+	  PostCustomField.destroy_all(post_id: id, name:"rating")#old
       PostCustomField.destroy_all(post_id: id, name:"rating1")
 	  PostCustomField.destroy_all(post_id: id, name:"rating2")
 	  PostCustomField.destroy_all(post_id: id, name:"rating3")
@@ -61,6 +63,12 @@ after_initialize do
 	  
       @topic_posts.each do |tp|
         weight = tp.custom_fields["rating_weight"]
+		
+		if tp.custom_fields["rating"] && (weight.blank? || weight.to_i > 0)
+          rating1 = tp.custom_fields["rating"].to_i
+		  #@ratings1.push(rating)
+          @ratings.push(rating)
+        end#old
         if tp.custom_fields["rating1"] && (weight.blank? || weight.to_i > 0)
           rating1 = tp.custom_fields["rating1"].to_i
 		  @ratings1.push(rating1)
@@ -229,9 +237,11 @@ after_initialize do
 
   ## Add the new fields to the serializers
   add_to_serializer(:basic_category, :rating_enabled) {object.custom_fields["rating_enabled"]}
+  add_to_serializer(:post, :rating1) {post_custom_fields["rating"]}
   add_to_serializer(:post, :rating1) {post_custom_fields["rating1"]}
   add_to_serializer(:post, :rating2) {post_custom_fields["rating2"]}
   add_to_serializer(:post, :rating3) {post_custom_fields["rating3"]}
   add_to_serializer(:post, :rating4) {post_custom_fields["rating4"]}
   add_to_serializer(:post, :rating5) {post_custom_fields["rating5"]}
 end
+
