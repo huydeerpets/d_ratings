@@ -209,7 +209,7 @@ export default {
           this.removeRating(post)
           this.get('controllers.topic').toggleCanRate()
         } else {
-          this.saveRating(post, rating)
+          this.saveRating(post, rating,rating1,rating2,rating3,rating4,rating5)
         }
       }.observes('model.composeState'),
 
@@ -224,7 +224,7 @@ export default {
         });
       },
 
-      saveRating: function(post, rating) {
+      saveRating: function(post, rating,rating1,rating2,rating3,rating4,rating5) {
         post.set('rating', rating)
 		 post.set('rating1', rating1)
 		post.set('rating2', rating2)
