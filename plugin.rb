@@ -5,6 +5,7 @@
 
 register_asset 'stylesheets/ratings-desktop.scss', :desktop
 register_asset 'stylesheets/ratings-mobile.scss', :mobile
+
 after_initialize do
 
   Category.register_custom_field_type('rating_enabled', :boolean)
@@ -16,16 +17,16 @@ after_initialize do
     end
   end
 
- require_dependency "application_controller"
+  require_dependency "application_controller"
   class DiscourseRatings::RatingController < ::ApplicationController
     def rate
       post = Post.find(params[:id].to_i)
-	  post.custom_fields["rating"] = params[:rating].to_f #old
-      post.custom_fields["rating1"] = params[:rating1].to_f #sharpness
-	  post.custom_fields["rating2"] = params[:rating2].to_f #aberrations
-	  post.custom_fields["rating3"] = params[:rating3].to_f #bokeh
-	  post.custom_fields["rating4"] = params[:rating4].to_f #handling
-	  post.custom_fields["rating5"] = params[:rating5].to_f #value
+      
+	  post.custom_fields["rating1"] = params[:rating1].to_i #sharpness
+	  post.custom_fields["rating2"] = params[:rating2].to_i #aberrations
+	  post.custom_fields["rating3"] = params[:rating3].to_i #bokeh
+	  post.custom_fields["rating4"] = params[:rating4].to_i #handling
+	  post.custom_fields["rating5"] = params[:rating5].to_i #value
       post.custom_fields["rating_weight"] = 1
       post.save!
       calculate_topic_average(post)
@@ -41,13 +42,12 @@ after_initialize do
     def remove
       id = params[:id].to_i
       post = Post.find(id)
-	  PostCustomField.destroy_all(post_id: id, name:"rating")#old
-      PostCustomField.destroy_all(post_id: id, name:"rating1")
+      
+	  PostCustomField.destroy_all(post_id: id, name:"rating1")
 	  PostCustomField.destroy_all(post_id: id, name:"rating2")
 	  PostCustomField.destroy_all(post_id: id, name:"rating3")
 	  PostCustomField.destroy_all(post_id: id, name:"rating4")
 	  PostCustomField.destroy_all(post_id: id, name:"rating5")
-	  
       PostCustomField.destroy_all(post_id: id, name:"rating_weight")
       calculate_topic_average(post)
     end
@@ -55,21 +55,16 @@ after_initialize do
     def calculate_topic_average(post)
       @topic_posts = Post.with_deleted.where(topic_id: post.topic_id)
       @ratings = []
+	  
 	  @ratings1 = []
 	  @ratings2 = []
 	  @ratings3 = []
 	  @ratings4 = []
 	  @ratings5 = []
-	  
       @topic_posts.each do |tp|
         weight = tp.custom_fields["rating_weight"]
-		
-		if tp.custom_fields["rating"] && (weight.blank? || weight.to_i > 0)
-          rating1 = tp.custom_fields["rating"].to_i
-		  #@ratings1.push(rating)
-          @ratings.push(rating)
-        end#old
-        if tp.custom_fields["rating1"] && (weight.blank? || weight.to_i > 0)
+        
+		if tp.custom_fields["rating1"] && (weight.blank? || weight.to_i > 0)
           rating1 = tp.custom_fields["rating1"].to_i
 		  @ratings1.push(rating1)
           @ratings.push(rating1)
@@ -95,19 +90,20 @@ after_initialize do
           @ratings.push(rating5)
         end
       end
-      average = @ratings.empty? ? nil : @ratings.inject(:+).to_f / @ratings.length
+      
+	  average = @ratings.empty? ? nil : @ratings.inject(:+).to_f / @ratings.length
 	  average1 = @ratings1.empty? ? nil : @ratings1.inject(:+).to_f / @ratings1.length
 	  average2 = @ratings2.empty? ? nil : @ratings2.inject(:+).to_f / @ratings2.length
 	  average3 = @ratings2.empty? ? nil : @ratings3.inject(:+).to_f / @ratings3.length
 	  average4 = @ratings2.empty? ? nil : @ratings4.inject(:+).to_f / @ratings4.length
 	  average5 = @ratings2.empty? ? nil : @ratings5.inject(:+).to_f / @ratings5.length
 	  
-      post.topic.custom_fields["average_rating"] = average.round(1)
-	  post.topic.custom_fields["average_rating1"] = average1.round(1)
-	  post.topic.custom_fields["average_rating2"] = average2.round(1)
-	  post.topic.custom_fields["average_rating3"] = average3.round(1)
-	  post.topic.custom_fields["average_rating4"] = average4.round(1)
-	  post.topic.custom_fields["average_rating5"] = average5.round(1)
+      post.topic.custom_fields["average_rating"] = average
+	  post.topic.custom_fields["average_rating1"] = average1
+	  post.topic.custom_fields["average_rating2"] = average2
+	  post.topic.custom_fields["average_rating3"] = average3
+	  post.topic.custom_fields["average_rating4"] = average4
+	  post.topic.custom_fields["average_rating5"] = average5
       post.topic.save!
       push_updated_ratings_to_clients!(post, average)
     end
@@ -147,9 +143,10 @@ after_initialize do
   end
 
   TopicView.add_post_custom_fields_whitelister do |user|
-    ["rating","rating1","rating2","rating3","rating4","rating5", "rating_weight"]
+    ["rating1","rating2","rating3","rating4","rating5", "rating_weight"]
   end
 
+  
   TopicList.preloaded_custom_fields << "average_rating" if TopicList.respond_to? :preloaded_custom_fields
   TopicList.preloaded_custom_fields << "average_rating1" if TopicList.respond_to? :preloaded_custom_fields
   TopicList.preloaded_custom_fields << "average_rating2" if TopicList.respond_to? :preloaded_custom_fields
@@ -157,21 +154,14 @@ after_initialize do
   TopicList.preloaded_custom_fields << "average_rating4" if TopicList.respond_to? :preloaded_custom_fields
   TopicList.preloaded_custom_fields << "average_rating5" if TopicList.respond_to? :preloaded_custom_fields
 
-  #require 'post_serializer'
-  #class ::PostSerializer
-#	attributes :
-#  end
-  
-  
-  
   require 'topic_view_serializer'
   class ::TopicViewSerializer
-    attributes :average_rating, :average_rating1, :average_rating2, :average_rating3, :average_rating4, :average_rating5, :show_ratings, :can_rate
+    attributes :average_rating,  :average_rating1, :average_rating2, :average_rating3, :average_rating4, :average_rating5, :show_ratings, :can_rate
 
     def average_rating
       object.topic.custom_fields["average_rating"]
     end
-	def average_rating1
+    def average_rating1
       object.topic.custom_fields["average_rating1"]
     end
 	def average_rating2
@@ -186,7 +176,6 @@ after_initialize do
 	def average_rating5
       object.topic.custom_fields["average_rating5"]
     end
-
     def show_ratings
       topic = object.topic
       has_rating_tag = TopicCustomField.exists?(topic_id: topic.id, name: "tags", value: "rating")
@@ -208,10 +197,11 @@ after_initialize do
   class ::TopicListItemSerializer
     attributes :average_rating, :average_rating1, :average_rating2,:average_rating3,:average_rating4,:average_rating5, :show_average
 
+
     def average_rating
       object.custom_fields["average_rating"]
     end
-	def average_rating1
+    def average_rating1
       object.custom_fields["average_rating1"]
     end
 	def average_rating2
@@ -226,7 +216,6 @@ after_initialize do
 	def average_rating5
       object.custom_fields["average_rating5"]
     end
-
     def show_average
       return false if !average_rating
       has_rating_tag = TopicCustomField.exists?(topic_id: object.id, name: "tags", value: "rating")
@@ -237,11 +226,10 @@ after_initialize do
 
   ## Add the new fields to the serializers
   add_to_serializer(:basic_category, :rating_enabled) {object.custom_fields["rating_enabled"]}
-  add_to_serializer(:post, :rating1) {post_custom_fields["rating"]}
+  
   add_to_serializer(:post, :rating1) {post_custom_fields["rating1"]}
   add_to_serializer(:post, :rating2) {post_custom_fields["rating2"]}
   add_to_serializer(:post, :rating3) {post_custom_fields["rating3"]}
   add_to_serializer(:post, :rating4) {post_custom_fields["rating4"]}
   add_to_serializer(:post, :rating5) {post_custom_fields["rating5"]}
 end
-

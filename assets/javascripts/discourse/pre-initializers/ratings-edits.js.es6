@@ -6,8 +6,8 @@ import ComposerView from 'discourse/views/composer';
 import Composer from 'discourse/models/composer';
 import Post from 'discourse/models/post';
 import { registerUnbound } from 'discourse/lib/helpers';
-import renderUnboundRating from 'discourse/plugins/d_ratings/lib/render-rating';
-import renderUnboundRating2 from 'discourse/plugins/d_ratings/lib/render-rating2';
+import renderUnboundRating from 'discourse/plugins/discourse-ratings/lib/render-rating';
+import renderUnboundRating2 from 'discourse/plugins/discourse-ratings/lib/render-rating2';
 import { popupAjaxError } from 'discourse/lib/ajax-error';
 import { withPluginApi } from 'discourse/lib/plugin-api';
 
@@ -16,24 +16,31 @@ export default {
   initialize(){
 
     withPluginApi('0.1', api => {
-      api.includePostAttributes('rating')
-	   api.includePostAttributes('rating1')
+      
+	  api.includePostAttributes('rating1')
 	  api.includePostAttributes('rating2')
 	  api.includePostAttributes('rating3')
 	  api.includePostAttributes('rating4')
 	  api.includePostAttributes('rating5')
-      api.decorateWidget('poster-name:after', function(helper) {
-        var rating = helper.attrs.rating,
+      api.decorateWidget('post-contents:before', function(helper) {
+        var 
 		rating1 = helper.attrs.rating1,
 		rating2 = helper.attrs.rating2,
 		rating3 = helper.attrs.rating3,
 		rating4 = helper.attrs.rating4,
 		rating5 = helper.attrs.rating5,
             showRating = helper.getModel().topic.show_ratings;
-        if (showRating && rating) {
-		var rating0 = Math.round((Number.parseFloat(rating1)+ Number.parseFloat(rating2)+ Number.parseFloat(rating3)+ Number.parseFloat(rating4)+ Number.parseFloat(rating5)  )/5)
-          var html = new Handlebars.SafeString(renderUnboundRating(rating0,rating1,rating2,rating3,rating4,rating5))
-          //var html = new Handlebars.SafeString(renderUnboundRating(rating))
+        if (showRating && rating1 && rating2 && rating3 && rating4 && rating5) {
+	//var rating0 = 0
+	var rating_array = [];
+	rating_array.push(rating1)
+	rating_array.push(rating2)
+	rating_array.push(rating3)
+	rating_array.push(rating4)
+	rating_array.push(rating5)
+	
+          var html = new Handlebars.SafeString(renderUnboundRating(rating_array))
+		  //var html = new Handlebars.SafeString(renderUnboundRating(rating1,rating2,rating3,rating4,rating5))
           return helper.rawHtml(`${html}`)
         }
       })
@@ -48,7 +55,7 @@ export default {
           this.messageBus.subscribe("/topic/" + model.id, function(data) {
             if (data.type === 'revised' && data.average !== undefined) {
               model.set('average_rating', data.average)
-			   model.set('average_rating1', Math.round(data.average1))
+			  model.set('average_rating1', Math.round(data.average1))
 			    model.set('average_rating2', Math.round(data.average2))
 				model.set('average_rating3', Math.round(data.average3))
 				model.set('average_rating4', Math.round(data.average4))
@@ -59,16 +66,17 @@ export default {
       }.observes('model.postStream.loaded'),
 
       showRating: function() {
-        if (this.get('model.average_rating') < 1) {return false}
-        if (!this.get('editingTopic')) {return this.get('model.show_ratings')}
+        if (this.get('model.average_rating') < 1) {return false} //Not show rating if average_rating <1
+        if (!this.get('editingTopic')) {return this.get('model.show_ratings')}  // If not editing -> use default show_rating
         var category = this.site.categories.findProperty('id', this.get('buffered.category_id')),
             tags = this.get('buffered.tags'),
-            ratingsVisible = Boolean((category && category.rating_enabled) || (tags && tags.indexOf('rating') > -1));
+            ratingsVisible = Boolean((category && category.rating_enabled) || (tags && tags.indexOf('rating') > -1)); // showRating = true if config to rate
+			
         if (ratingsVisible !== this.get('buffered.show_ratings')) {
           this.set('refreshAfterTopicEdit', true)
         }
         return ratingsVisible
-            }.property('model.average_rating','model.average_rating1','model.average_rating2','model.average_rating3','model.average_rating4','model.average_rating5', 'model.show_ratings', 'buffered.category_id', 'buffered.tags'),
+      }.property('model.average_rating','model.average_rating1','model.average_rating2','model.average_rating3','model.average_rating4','model.average_rating5', 'model.show_ratings', 'buffered.category_id', 'buffered.tags'),
 
       refreshTopic: function() {
         if (!this.get('editingTopic') && this.get('refreshAfterTopicEdit')) {
@@ -111,8 +119,8 @@ export default {
     })
 
     ComposerController.reopen({
-      rating: null,
-	   rating1: null,
+      //rating: null,
+	  rating1: null,
 	  rating2: null,
 	  rating3: null,
 	  rating4: null,
@@ -125,7 +133,7 @@ export default {
         // overrides controller methods
         save() {
           var show = this.get('showRating');
-         if (show && this.get('includeRating') && !this.get('rating') && !this.get('rating1') && !this.get('rating2')&& !this.get('rating3')&& !this.get('rating4')&& !this.get('rating5')) {
+          if (show && this.get('includeRating') && ( !this.get('rating1') || !this.get('rating2')|| !this.get('rating3')|| !this.get('rating4')|| !this.get('rating5'))) {
             return bootbox.alert(I18n.t("composer.select_rating"))
           }
           var model = this.get('model'),
@@ -142,7 +150,7 @@ export default {
 
       // overrides controller methods
       close() {
-        this.setProperties({ model: null, lastValidatedAt: null, rating: null ,rating1: null, rating2: null, rating3: null, rating4: null, rating5: null });
+        this.setProperties({ model: null, lastValidatedAt: null, rating1: null, rating2: null, rating3: null, rating4: null, rating5: null });
         if (this.get('refreshAfterPost')) {
           this.send("refreshTopic")
           this.set('refreshAfterPost', false)
@@ -167,21 +175,39 @@ export default {
           return Boolean((category && category.rating_enabled) || (tags && tags.indexOf('rating') > -1));
         }
         if (topic.can_rate) {return true}
-        return Boolean(topic.show_ratings && post && post.rating && (model.get('action') === Composer.EDIT))
+        return Boolean(topic.show_ratings && post && post.rating1 && post.rating2 && post.rating3 && post.rating4 && post.rating5  && (model.get('action') === Composer.EDIT))//&& post.rating
       }.property('model.topic', 'model.categoryId', 'model.tags', 'model.post'),
 
       setRating: function() {
         var model = this.get('model')
         if (!model || this.get('model.action') !== Composer.EDIT) {return null}
         var post = model.get('post')
-        if (post && !this.get('rating') && !this.get('rating1') && !this.get('rating2')&& !this.get('rating3')&& !this.get('rating4')&& !this.get('rating5') && this.get('showRating')) {
-          this.set('rating', post.rating)
+        if (post && !this.get('rating1') && this.get('showRating')) {
+         // this.set('rating', post.rating)
 		  this.set('rating1', post.rating1)
-		  this.set('rating2', post.rating2)
-		  this.set('rating3', post.rating3)
-		  this.set('rating4', post.rating4)
-		  this.set('rating5', post.rating5)
+		  
         }
+		if (post && !this.get('rating2') && this.get('showRating')) {
+         // this.set('rating', post.rating)
+		  this.set('rating2', post.rating2)
+		  
+        }
+		if (post && !this.get('rating3') && this.get('showRating')) {
+         // this.set('rating', post.rating)
+		  this.set('rating3', post.rating3)
+		  
+        }
+		if (post && !this.get('rating4') && this.get('showRating')) {
+         // this.set('rating', post.rating)
+		  this.set('rating4', post.rating4)
+		  
+        }
+		if (post && !this.get('rating5') && this.get('showRating')) {
+         // this.set('rating', post.rating)
+		  this.set('rating5', post.rating5)
+		  
+        }
+		
       }.observes('model.post', 'showRating'),
 
       saveRatingAfterCreating: function() {
@@ -189,7 +215,7 @@ export default {
             !this.get('includeRating')) {return}
         var post = this.get('model.createdPost')
         if (!post) {return}
-        this.saveRating(post, this.get('rating'),this.get('rating1'),this.get('rating2'),this.get('rating3'),this.get('rating4'),this.get('rating5'))
+        this.saveRating(post, this.get('rating1'),this.get('rating2'),this.get('rating3'),this.get('rating4'),this.get('rating5'))
         this.get('controllers.topic').toggleCanRate()
       }.observes('model.createdPost'),
 
@@ -199,17 +225,17 @@ export default {
             || this.get('model.composeState') !== Composer.CLOSED) {return}
         var post = this.get('model.post')
         if (!post) {return}
-        var rating = this.get('rating');
+        //var rating = this.get('rating');
 		var rating1 = this.get('rating1');
 		var rating2 = this.get('rating2');
 		var rating3 = this.get('rating3');
 		var rating4 = this.get('rating4');
 		var rating5 = this.get('rating5');
-        if (rating && !this.get('includeRating')) {
+        if (rating1 && rating2 && rating3 && rating4 && rating5 && !this.get('includeRating')) {
           this.removeRating(post)
           this.get('controllers.topic').toggleCanRate()
         } else {
-          this.saveRating(post, rating,rating1,rating2,rating3,rating4,rating5)
+          this.saveRating(post, rating1,rating2,rating3,rating4,rating5)
         }
       }.observes('model.composeState'),
 
@@ -224,9 +250,9 @@ export default {
         });
       },
 
-      saveRating: function(post, rating,rating1,rating2,rating3,rating4,rating5) {
-        post.set('rating', rating)
-		 post.set('rating1', rating1)
+      saveRating: function(post, rating1,rating2,rating3,rating4,rating5) {
+        //post.set('rating', rating)
+		post.set('rating1', rating1)
 		post.set('rating2', rating2)
 		post.set('rating3', rating3)
 		post.set('rating4', rating4)
@@ -235,13 +261,12 @@ export default {
           type: 'POST',
           data: {
             id: post.id,
-            rating: rating,
+            //rating: rating,
 			rating1: rating1,
 			rating2: rating2,
 			rating3: rating3,
 			rating4: rating4,
 			rating5: rating5
-			
           }
         }).catch(function (error) {
           popupAjaxError(error);
@@ -261,6 +286,7 @@ export default {
     registerUnbound('rating-unbound', function(rating) {
       return new Handlebars.SafeString(renderUnboundRating2(rating));
     });
+	
 
   }
 }

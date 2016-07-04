@@ -1,5 +1,5 @@
 {{#if showRating}}
-  {{input type="checkbox" checked=includeRating}}
+  {{input type="checkbox" checked=showRating}}
   {{i18n 'composer.your_rating'}}
   {{#if includeRating}}
     
@@ -8,5 +8,6 @@
 	<div style="padding: 5px;"><div class="rating-specs" >Bokeh</div>{{d-rating-enabled3 enabled=includeRating rating3=rating3}}   </div>
 	<div style="padding: 5px;"><div class="rating-specs" >Handling</div>{{d-rating-enabled4 enabled=includeRating rating4=rating4}}   </div>
 	<div style="padding: 5px;"><div class="rating-specs" >Value</div>{{d-rating-enabled5 enabled=includeRating rating5=rating5}}   </div>
+   
   {{/if}}
 {{/if}}

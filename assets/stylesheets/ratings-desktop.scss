@@ -1,3 +1,9 @@
+.topic-map .map-collapsed2 .secondary {
+    display: block;
+    font-size: 0.8em;
+    text-align: center;
+    width: 49px;
+}
 .rating-specs{
 float: left; margin-right: 5px;width:80px;
 }
@@ -46,41 +52,42 @@ margin-bottom:10px;
 			overflow: hidden;
 		}
 .camera-lens-rating .rating-10,.lens-rating .rating-10{
-background-color: #FFFF00; 
+background-color: #FFFF99; 
 }
 .camera-lens-rating .rating-20,.lens-rating .rating-20{
-background-color: #E8E113; 
+background-color: #FFFF73; 
 }
 .camera-lens-rating .rating-30,.lens-rating .rating-30{
-background-color: #E8E813; 
+background-color: #FFFF4C; 
 }
 .camera-lens-rating .rating-40,.lens-rating .rating-40{
-background-color: #DDE813; 
+background-color: #FFFF26; 
 }
 
 .camera-lens-rating .rating-50,.lens-rating .rating-50{
-background-color: #c4e813; 
+background-color: #C9FF26; 
 }
 
 .camera-lens-rating .rating-60,.lens-rating .rating-60{
-background-color: #afe813; 
+background-color: #A6FF4C; 
 }
 
 .camera-lens-rating .rating-70,.lens-rating .rating-70{
-background-color: #80FF00;
+background-color: #93FF26;
 }
 
 .camera-lens-rating .rating-80,.lens-rating .rating-80{
-background-color: #56e813;
+background-color: #80FF00;
 }
 
 .camera-lens-rating .rating-90,.lens-rating .rating-90{
-background-color: #38FF26;
+background-color: #40FF00;
 }
 
 .camera-lens-rating .rating-100,.lens-rating .rating-100{
-background-color: #0aff00;
+background-color: #00D900;
 }
+
 
 
 span.sharprating {
